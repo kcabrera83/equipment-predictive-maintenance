@@ -2,7 +2,25 @@
 
 Predictive maintenance system for oil & gas equipment based on Machine Learning. Classifies equipment status using XGBoost, estimates remaining useful life with regression models, detects sensor anomalies via PyOD Isolation Forest, and performs survival analysis with lifelines Weibull models.
 
----
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Classification | **XGBoost** (>=2.0) - failure status prediction |
+| Anomaly Detection | **PyOD** IForest (>=1.0) - Isolation Forest |
+| Survival Analysis | **lifelines** WeibullFitter (>=0.27) - RUL survival modeling |
+| Data Processing | pandas, numpy, joblib |
+| Web Server | **FastAPI** + uvicorn |
+| Monitoring | prometheus-fastapi-instrumentator |
+| Validation | pydantic v2 |
+| Visualization | matplotlib |
+
+### Key Libraries
+- XGBoost - Gradient boosting for classification
+- PyOD - Isolation Forest anomaly detection
+- lifelines - Survival analysis with Weibull models
+- FastAPI - Modern async web framework
+- pandas / numpy - Data processing
 
 ## Architecture
 
@@ -25,28 +43,12 @@ equipment-predictive-maintenance/
 │   └── evaluate.py                # Evaluation with CV
 ├── templates/
 │   └── index.html                 # Interactive web dashboard
-├── app.py                         # Flask server (5 endpoints)
+├── app.py                         # FastAPI server (5 endpoints)
 ├── test_api.py                    # Automated tests
 ├── requirements.txt
 ├── .github/workflows/test.yml     # CI/CD
 └── README.md
 ```
-
----
-
-## Tech Stack
-
-| Component | Technology |
-|-----------|-----------|
-| Classification | **XGBoost** (≥2.0) — failure status prediction |
-| Anomaly Detection | **PyOD** IForest (≥1.0) — Isolation Forest |
-| Survival Analysis | **lifelines** WeibullFitter (≥0.27) — RUL survival modeling |
-| Additional Classifiers | GradientBoosting, ExtraTrees, RandomForest, MLP, LogisticRegression |
-| Data Processing | pandas, numpy, joblib |
-| Visualization | matplotlib |
-| Web Server | FastAPI + uvicorn |
-| Monitoring | prometheus-fastapi-instrumentator |
-| Validation | pydantic v2 |
 
 ## ML Models
 
@@ -71,10 +73,8 @@ equipment-predictive-maintenance/
 
 ### Anomaly Detection
 
-- **PyOD IForest** — Isolation Forest with contamination=5%
-- **lifelines WeibullFitter** — Survival analysis for remaining useful life
-
----
+- **PyOD IForest** - Isolation Forest with contamination=5%
+- **lifelines WeibullFitter** - Survival analysis for remaining useful life
 
 ## Supported Equipment
 
@@ -85,31 +85,27 @@ equipment-predictive-maintenance/
 | Compressor | 1-12 mm/s | 50-150 C | 200-2000 psi | 365-1460 days |
 | Separator | 0.3-4 mm/s | 30-70 C | 50-300 psi | 500-1800 days |
 
----
-
 ## Sensors (16 features)
 
-- vibration_x, vibration_y, vibration_z — 3-axis vibration (mm/s)
-- temperature — Equipment temperature (C)
-- pressure — Operating pressure (psi)
-- flow_rate — Volumetric flow (m3/h)
-- motor_current — Motor current (A)
-- rpm — Rotation speed
-- bearing_temp — Bearing temperature (C)
-- oil_level — Oil level (%)
-- seal_pressure — Seal pressure (psi)
-- suction_pressure — Suction pressure (psi)
-- discharge_pressure — Discharge pressure (psi)
-- power_consumption — Power consumption (kW)
-- runtime_hours — Operating hours
-- days_since_maintenance — Days since last maintenance
+- vibration_x, vibration_y, vibration_z - 3-axis vibration (mm/s)
+- temperature - Equipment temperature (C)
+- pressure - Operating pressure (psi)
+- flow_rate - Volumetric flow (m3/h)
+- motor_current - Motor current (A)
+- rpm - Rotation speed
+- bearing_temp - Bearing temperature (C)
+- oil_level - Oil level (%)
+- seal_pressure - Seal pressure (psi)
+- suction_pressure - Suction pressure (psi)
+- discharge_pressure - Discharge pressure (psi)
+- power_consumption - Power consumption (kW)
+- runtime_hours - Operating hours
+- days_since_maintenance - Days since last maintenance
 
 ### Derived Features (8)
 
 - vibration_total, vibration_trend, temp_pressure_ratio, efficiency
 - power_per_flow, seal_pressure_ratio, discharge_suction_diff, bearing_temp_diff
-
----
 
 ## Equipment States
 
@@ -121,8 +117,6 @@ equipment-predictive-maintenance/
 | 3 | Corrective Maintenance | Corrective maintenance needed |
 | 4 | Failure Imminent | Imminent failure, stop equipment |
 
----
-
 ## API Endpoints
 
 | Endpoint | Method | Description |
@@ -133,18 +127,13 @@ equipment-predictive-maintenance/
 | `/api/predict_rul` | POST | RUL estimation in days |
 | `/api/anomaly_check` | POST | Sensor anomaly detection |
 
----
-
 ## Web Dashboard
 
-Flask + Chart.js — 4 sections:
-
-1. **Dashboard** — model metrics and equipment table
-2. **Status Prediction** — 16-sensor form for classification
-3. **RUL Estimation** — remaining useful life estimation with recommendation
-4. **Anomaly Detection** — anomaly verification with score
-
----
+FastAPI + Chart.js - 4 sections:
+1. **Dashboard** - model metrics and equipment table
+2. **Status Prediction** - 16-sensor form for classification
+3. **RUL Estimation** - remaining useful life estimation with recommendation
+4. **Anomaly Detection** - anomaly verification with score
 
 ## Quick Start
 
@@ -157,12 +146,9 @@ python app.py
 # Open http://localhost:5000
 ```
 
----
-
 ## CI/CD
 
 GitHub Actions runs on every push:
-
 1. Model training
 2. Predictions
 3. Full evaluation
