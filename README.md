@@ -149,3 +149,7 @@ GitHub Actions ejecuta en cada push:
 2. Predicciones
 3. Evaluacion completa
 4. Tests de API (5 endpoints)
+
+---
+
+Elaborado por Ing. Kelvin Cabrera
