@@ -179,5 +179,21 @@ def api_anomaly_check():
         return jsonify({"status": "error", "message": str(e)}), 400
 
 
+@app.route("/api/docs")
+def api_docs():
+    return jsonify({
+        "openapi": "3.0.0",
+        "info": {"title": "Equipment Predictive Maintenance - Mantenimiento Predictivo", "version": "1.0.0"},
+        "paths": {
+            "/": {"get": {"summary": "Dashboard principal"}},
+            "/api/health": {"get": {"summary": "Health check del servicio"}},
+            "/api/dashboard": {"get": {"summary": "Reporte de evaluacion y predicciones"}},
+            "/api/predict_status": {"post": {"summary": "Predecir estado operacional del equipo"}},
+            "/api/predict_rul": {"post": {"summary": "Estimar vida util restante (RUL) del equipo"}},
+            "/api/anomaly_check": {"post": {"summary": "Detectar anomalias en sensores del equipo"}},
+        }
+    })
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5003)
