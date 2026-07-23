@@ -1,6 +1,7 @@
 """FastAPI web server for equipment predictive maintenance."""
 
 import json
+import pickle
 import sys
 import warnings
 from pathlib import Path
@@ -12,9 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np
 import pandas as pd
-import xgboost as xgb
 from pyod.models.iforest import IForest
-from lifelines import WeibullFitter
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -37,12 +36,37 @@ app.add_middleware(
 Instrumentator().instrument(app).expose(app)
 
 models: dict[str, Any] = {}
+anomaly_detector = None
+preprocessor = None
+
+ANOMALY_FEATURES = [
+    "vibration_x", "vibration_y", "vibration_z",
+    "temperature", "pressure", "motor_current",
+    "bearing_temp", "power_consumption",
+]
+
+
+def _fit_anomaly_detector():
+    data_path = Path("outputs/data/equipment_sensors.csv")
+    if data_path.exists():
+        df = pd.read_csv(data_path)
+    else:
+        from equip_predict.data_generator import EquipDataGenerator
+        gen = EquipDataGenerator(seed=42)
+        df = gen.generate(n_units=150, n_days=365)
+    X = df[ANOMALY_FEATURES].values
+    detector = IForest(contamination=0.05, random_state=42)
+    detector.fit(X)
+    return detector
 
 
 @app.on_event("startup")
 async def load_models():
+    global anomaly_detector, preprocessor
     from equip_predict.models.failure_predictor import FailurePredictor
     from equip_predict.models.life_estimator import LifeEstimator
+    from equip_predict.utils.preprocessor import EquipPreprocessor
+
     try:
         models["classifier"] = FailurePredictor.load("outputs/models/failure_predictor.pkl")
         models["rul_estimator"] = LifeEstimator.load("outputs/models/life_estimator.pkl")
@@ -50,19 +74,28 @@ async def load_models():
         print(f"  Error loading models: {e}")
 
     try:
-        rng = np.random.default_rng(42)
-        normal_data = pd.DataFrame({
-            "vibration_x": rng.uniform(0.5, 5, 200),
-            "vibration_y": rng.uniform(0.3, 4, 200),
-            "vibration_z": rng.uniform(0.2, 3, 200),
-            "temperature": rng.uniform(40, 90, 200),
-            "pressure": rng.uniform(50, 400, 200),
-            "motor_current": rng.uniform(10, 80, 200),
-            "bearing_temp": rng.uniform(50, 110, 200),
-            "power_consumption": rng.uniform(20, 80, 200),
-        })
-        models["anomaly_detector"] = IForest(contamination=0.05, random_state=42)
-        models["anomaly_detector"].fit(normal_data.values)
+        prep_path = Path("outputs/models/preprocessor.pkl")
+        if prep_path.exists():
+            with open(prep_path, "rb") as f:
+                preprocessor = pickle.load(f)
+        else:
+            data_path = Path("outputs/data/equipment_sensors.csv")
+            if data_path.exists():
+                df = pd.read_csv(data_path)
+            else:
+                from equip_predict.data_generator import EquipDataGenerator
+                gen = EquipDataGenerator(seed=42)
+                df = gen.generate(n_units=150, n_days=365)
+            preprocessor = EquipPreprocessor()
+            preprocessor.fit(df)
+            prep_path.parent.mkdir(parents=True, exist_ok=True)
+            with open(prep_path, "wb") as f:
+                pickle.dump(preprocessor, f)
+    except Exception as e:
+        print(f"  Error loading preprocessor: {e}")
+
+    try:
+        anomaly_detector = _fit_anomaly_detector()
     except Exception as e:
         print(f"  Error training anomaly detector: {e}")
 
@@ -102,10 +135,9 @@ def _to_df(data):
 
 
 def _preprocess(df):
-    from equip_predict.utils.preprocessor import EquipPreprocessor
-    prep = EquipPreprocessor()
-    prep.fit(df)
-    return prep.transform(df)
+    if preprocessor is None:
+        raise RuntimeError("Preprocessor not loaded")
+    return preprocessor.transform(df)
 
 
 @app.get("/api/health")
@@ -182,15 +214,15 @@ async def api_predict_rul(request: SensorInput):
 @app.post("/api/anomaly_check")
 async def api_anomaly_check(request: AnomalyInput):
     try:
-        if "anomaly_detector" not in models:
+        if anomaly_detector is None:
             raise HTTPException(status_code=503, detail="Anomaly detector not loaded")
         data = np.array([[
             request.vibration_x, request.vibration_y, request.vibration_z,
             request.temperature, request.pressure, request.motor_current,
             request.bearing_temp, request.power_consumption,
         ]])
-        pred = models["anomaly_detector"].predict(data)
-        score = models["anomaly_detector"].decision_function(data)
+        pred = anomaly_detector.predict(data)
+        score = anomaly_detector.decision_function(data)
         is_anomaly = pred[0] == 1
         return {
             "status": "success",
