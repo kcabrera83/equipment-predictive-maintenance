@@ -1,4 +1,4 @@
-"""Servidor web Flask para mantenimiento predictivo de equipos."""
+"""Flask web server for equipment predictive maintenance."""
 
 import sys
 from pathlib import Path
@@ -183,14 +183,14 @@ def api_anomaly_check():
 def api_docs():
     return jsonify({
         "openapi": "3.0.0",
-        "info": {"title": "Equipment Predictive Maintenance - Mantenimiento Predictivo", "version": "1.0.0"},
+        "info": {"title": "Equipment Predictive Maintenance - Predictive Maintenance", "version": "1.0.0"},
         "paths": {
-            "/": {"get": {"summary": "Dashboard principal"}},
-            "/api/health": {"get": {"summary": "Health check del servicio"}},
-            "/api/dashboard": {"get": {"summary": "Reporte de evaluacion y predicciones"}},
-            "/api/predict_status": {"post": {"summary": "Predecir estado operacional del equipo"}},
-            "/api/predict_rul": {"post": {"summary": "Estimar vida util restante (RUL) del equipo"}},
-            "/api/anomaly_check": {"post": {"summary": "Detectar anomalias en sensores del equipo"}},
+            "/": {"get": {"summary": "Main dashboard"}},
+            "/api/health": {"get": {"summary": "Service health check"}},
+            "/api/dashboard": {"get": {"summary": "Evaluation report and predictions"}},
+            "/api/predict_status": {"post": {"summary": "Predict equipment operational status"}},
+            "/api/predict_rul": {"post": {"summary": "Estimate remaining useful life (RUL) of equipment"}},
+            "/api/anomaly_check": {"post": {"summary": "Detect anomalies in equipment sensors"}},
         }
     })
 

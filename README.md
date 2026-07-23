@@ -1,32 +1,32 @@
 # Equipment Predictive Maintenance
 
-Sistema de mantenimiento predictivo para equipos de oil & gas basado en Machine Learning. Clasifica el estado de equipos (normal, warning, mantenimiento preventivo/correctivo, fallo inminente), estima la vida util restante (RUL) y detecta anomalias en sensores.
+Predictive maintenance system for oil & gas equipment based on Machine Learning. Classifies equipment status (normal, warning, preventive/corrective maintenance, imminent failure), estimates remaining useful life (RUL), and detects sensor anomalies.
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
 equipment-predictive-maintenance/
 ├── equip_predict/
 │   ├── __init__.py
-│   ├── data_generator.py          # Generador de datos sinteticos de sensores
+│   ├── data_generator.py          # Synthetic sensor data generator
 │   ├── models/
-│   │   ├── failure_predictor.py   # Clasificacion de estado (5 clases)
-│   │   ├── life_estimator.py      # Regresion de RUL (dias restantes)
-│   │   └── anomaly_detector.py    # Deteccion de anomalias (Isolation Forest)
+│   │   ├── failure_predictor.py   # Status classification (5 classes)
+│   │   ├── life_estimator.py      # RUL regression (remaining days)
+│   │   └── anomaly_detector.py    # Anomaly detection (Isolation Forest)
 │   └── utils/
-│       ├── preprocessor.py        # Feature engineering de sensores
-│       ├── visualizer.py          # Graficos de tendencias y evaluacion
+│       ├── preprocessor.py        # Sensor feature engineering
+│       ├── visualizer.py          # Trend and evaluation charts
 │       └── metrics.py             # Accuracy, F1, MAE, R2, confusion matrix
 ├── scripts/
-│   ├── train.py                   # Entrenamiento completo
-│   ├── predict.py                 # Prediccion por equipo
-│   └── evaluate.py                # Evaluacion con CV
+│   ├── train.py                   # Full training
+│   ├── predict.py                 # Equipment prediction
+│   └── evaluate.py                # Evaluation with CV
 ├── templates/
-│   └── index.html                 # Dashboard web interactivo
-├── app.py                         # Servidor Flask (5 endpoints)
-├── test_api.py                    # Tests automatizados
+│   └── index.html                 # Interactive web dashboard
+├── app.py                         # Flask server (5 endpoints)
+├── test_api.py                    # Automated tests
 ├── requirements.txt
 ├── .github/workflows/test.yml     # CI/CD
 └── README.md
@@ -34,22 +34,22 @@ equipment-predictive-maintenance/
 
 ---
 
-## Modelos ML
+## ML Models
 
-### Clasificacion de Estado
+### Status Classification
 
-| Modelo | Accuracy | F1 Macro |
-|--------|----------|----------|
+| Model | Accuracy | F1 Macro |
+|-------|----------|----------|
 | GradientBoosting | 0.99+ | 0.99+ |
 | ExtraTrees | 0.99+ | 0.99+ |
 | RandomForest | 0.98+ | 0.98+ |
 | MLP | 0.95+ | 0.95+ |
 | LogisticRegression | 0.85+ | 0.85+ |
 
-### Estimacion de RUL (Remaining Useful Life)
+### RUL Estimation (Remaining Useful Life)
 
-| Modelo | R2 | MAE (days) |
-|--------|-----|------------|
+| Model | R2 | MAE (days) |
+|-------|-----|------------|
 | ExtraTrees | 0.99+ | < 15 |
 | GradientBoosting | 0.99+ | < 15 |
 | RandomForest | 0.98+ | < 20 |
@@ -58,10 +58,10 @@ equipment-predictive-maintenance/
 
 ---
 
-## Equipos Soportados
+## Supported Equipment
 
-| Tipo | Vibracion | Temperatura | Presion | Vida Util |
-|------|-----------|-------------|---------|-----------|
+| Type | Vibration | Temperature | Pressure | Useful Life |
+|------|-----------|-------------|----------|-------------|
 | Centrifugal Pump | 0.5-8 mm/s | 40-95 C | 50-400 psi | 180-720 days |
 | Reciprocating Pump | 2-15 mm/s | 35-85 C | 100-1000 psi | 240-900 days |
 | Compressor | 1-12 mm/s | 50-150 C | 200-2000 psi | 365-1460 days |
@@ -69,62 +69,62 @@ equipment-predictive-maintenance/
 
 ---
 
-## Sensores (16 features)
+## Sensors (16 features)
 
-- vibration_x, vibration_y, vibration_z — Vibracion 3-eje (mm/s)
-- temperature — Temperatura del equipo (C)
-- pressure — Presion de operacion (psi)
-- flow_rate — Flujo volumetrico (m3/h)
-- motor_current — Corriente del motor (A)
-- rpm — Velocidad de rotacion
-- bearing_temp — Temperatura del rodamiento (C)
-- oil_level — Nivel de aceite (%)
-- seal_pressure — Presion del sello (psi)
-- suction_pressure — Presion de succion (psi)
-- discharge_pressure — Presion de descarga (psi)
-- power_consumption — Consumo electrico (kW)
-- runtime_hours — Horas de operacion
-- days_since_maintenance — Dias desde ultimo mantenimiento
+- vibration_x, vibration_y, vibration_z — 3-axis vibration (mm/s)
+- temperature — Equipment temperature (C)
+- pressure — Operating pressure (psi)
+- flow_rate — Volumetric flow (m3/h)
+- motor_current — Motor current (A)
+- rpm — Rotation speed
+- bearing_temp — Bearing temperature (C)
+- oil_level — Oil level (%)
+- seal_pressure — Seal pressure (psi)
+- suction_pressure — Suction pressure (psi)
+- discharge_pressure — Discharge pressure (psi)
+- power_consumption — Power consumption (kW)
+- runtime_hours — Operating hours
+- days_since_maintenance — Days since last maintenance
 
-### Features Derivadas (8)
+### Derived Features (8)
 
 - vibration_total, vibration_trend, temp_pressure_ratio, efficiency
 - power_per_flow, seal_pressure_ratio, discharge_suction_diff, bearing_temp_diff
 
 ---
 
-## Estados del Equipo
+## Equipment States
 
-| Codigo | Estado | Descripcion |
-|--------|--------|-------------|
-| 0 | Normal | Operacion dentro de parametros |
-| 1 | Warning | Valores elevados, monitorear |
-| 2 | Preventive Maintenance | Mantenimiento programado recomendado |
-| 3 | Corrective Maintenance | Mantenimiento correctivo necesario |
-| 4 | Failure Imminent | Fallo inminente, detener equipo |
+| Code | State | Description |
+|------|-------|-------------|
+| 0 | Normal | Operation within parameters |
+| 1 | Warning | Elevated values, monitor |
+| 2 | Preventive Maintenance | Scheduled maintenance recommended |
+| 3 | Corrective Maintenance | Corrective maintenance needed |
+| 4 | Failure Imminent | Imminent failure, stop equipment |
 
 ---
 
 ## API Endpoints
 
-| Endpoint | Metodo | Descripcion |
+| Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/api/health` | GET | Estado del servicio |
-| `/api/dashboard` | GET | Metricas + predicciones |
-| `/api/predict_status` | POST | Clasificacion de estado (16 inputs) |
-| `/api/predict_rul` | POST | Estimacion de RUL en dias |
-| `/api/anomaly_check` | POST | Deteccion de anomalias en sensores |
+| `/api/health` | GET | Service status |
+| `/api/dashboard` | GET | Metrics + predictions |
+| `/api/predict_status` | POST | Status classification (16 inputs) |
+| `/api/predict_rul` | POST | RUL estimation in days |
+| `/api/anomaly_check` | POST | Sensor anomaly detection |
 
 ---
 
-## Dashboard Web
+## Web Dashboard
 
-Flask + Chart.js — 4 secciones:
+Flask + Chart.js — 4 sections:
 
-1. **Dashboard** — metricas del modelo y tabla de equipos
-2. **Status Prediction** — formulario de 16 sensores para clasificacion
-3. **RUL Estimation** — estimacion de vida util restante con recomendacion
-4. **Anomaly Detection** — verificacion de anomalias con score
+1. **Dashboard** — model metrics and equipment table
+2. **Status Prediction** — 16-sensor form for classification
+3. **RUL Estimation** — remaining useful life estimation with recommendation
+4. **Anomaly Detection** — anomaly verification with score
 
 ---
 
@@ -136,19 +136,19 @@ python scripts/train.py
 python scripts/predict.py
 python scripts/evaluate.py
 python app.py
-# Abrir http://localhost:5000
+# Open http://localhost:5000
 ```
 
 ---
 
 ## CI/CD
 
-GitHub Actions ejecuta en cada push:
+GitHub Actions runs on every push:
 
-1. Entrenamiento de modelos
-2. Predicciones
-3. Evaluacion completa
-4. Tests de API (5 endpoints)
+1. Model training
+2. Predictions
+3. Full evaluation
+4. API tests (5 endpoints)
 
 ---
 
