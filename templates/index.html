@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Equipment Predictive Maintenance</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #0f172a; color: #e2e8f0; }
+        .header { background: linear-gradient(135deg, #1e3a5f 0%, #dc2626 100%); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; }
+        .header h1 { font-size: 1.4rem; }
+        .header .subtitle { color: #94a3b8; font-size: 0.85rem; }
+        .status { display: flex; gap: 8px; align-items: center; }
+        .status .dot { width: 10px; height: 10px; border-radius: 50%; background: #22c55e; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 24px; background: #1e293b; border-radius: 12px; padding: 4px; }
+        .tab { padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; border: none; background: transparent; color: #94a3b8; }
+        .tab.active { background: #dc2626; color: white; font-weight: 600; }
+        .tab:hover:not(.active) { background: #334155; }
+        .panel { display: none; }
+        .panel.active { display: block; }
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+        .card h3 { color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px; }
+        .card .value { font-size: 1.8rem; font-weight: 700; color: #dc2626; }
+        .form-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 4px; }
+        .form-group label { color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; }
+        .form-group input { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 8px; color: #e2e8f0; font-size: 0.9rem; }
+        .form-group input:focus { outline: none; border-color: #dc2626; }
+        .btn { background: #dc2626; color: white; border: none; border-radius: 8px; padding: 10px 24px; font-size: 0.95rem; cursor: pointer; font-weight: 600; margin-top: 12px; }
+        .btn:hover { background: #b91c1c; }
+        .result-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 16px; margin-top: 12px; }
+        .result-box h3 { color: #dc2626; margin-bottom: 8px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th { background: #334155; padding: 8px; text-align: left; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; }
+        td { padding: 8px; border-bottom: 1px solid #1e293b; font-size: 0.85rem; }
+        tr:hover td { background: #1e293b; }
+        .badge { padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-green { background: #166534; color: #22c55e; }
+        .badge-yellow { background: #854d0e; color: #eab308; }
+        .badge-orange { background: #9a3412; color: #f97316; }
+        .badge-red { background: #991b1b; color: #ef4444; }
+        .badge-purple { background: #581c87; color: #a855f7; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div>
+            <h1>Equipment Predictive Maintenance</h1>
+            <div class="subtitle">ML for oil & gas equipment health monitoring</div>
+        </div>
+        <div class="status"><div class="dot"></div><span>Operational</span></div>
+    </div>
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showPanel('dashboard')">Dashboard</button>
+            <button class="tab" onclick="showPanel('status')">Status Prediction</button>
+            <button class="tab" onclick="showPanel('rul')">RUL Estimation</button>
+            <button class="tab" onclick="showPanel('anomaly')">Anomaly Detection</button>
+        </div>
+
+        <div id="dashboard" class="panel active">
+            <div class="grid" id="stats-grid"></div>
+            <div class="card">
+                <h3>Equipment Predictions</h3>
+                <table id="predTable">
+                    <thead><tr><th>Unit</th><th>Type</th><th>Status</th><th>RUL (days)</th><th>Temp (C)</th><th>Power (kW)</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="status" class="panel">
+            <div class="card">
+                <h3>Equipment Status Prediction</h3>
+                <div class="form-grid">
+                    <div class="form-group"><label>Vibration X (mm/s)</label><input type="number" id="s_vx" value="2.0" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Y (mm/s)</label><input type="number" id="s_vy" value="1.5" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Z (mm/s)</label><input type="number" id="s_vz" value="1.0" step="0.1"></div>
+                    <div class="form-group"><label>Temperature (C)</label><input type="number" id="s_temp" value="65"></div>
+                    <div class="form-group"><label>Pressure (psi)</label><input type="number" id="s_press" value="200"></div>
+                    <div class="form-group"><label>Flow Rate (m3/h)</label><input type="number" id="s_flow" value="150"></div>
+                    <div class="form-group"><label>Motor Current (A)</label><input type="number" id="s_curr" value="30"></div>
+                    <div class="form-group"><label>RPM</label><input type="number" id="s_rpm" value="1800"></div>
+                    <div class="form-group"><label>Bearing Temp (C)</label><input type="number" id="s_bear" value="75"></div>
+                    <div class="form-group"><label>Oil Level (%)</label><input type="number" id="s_oil" value="80"></div>
+                    <div class="form-group"><label>Seal Pressure (psi)</label><input type="number" id="s_seal" value="50"></div>
+                    <div class="form-group"><label>Suction Pressure (psi)</label><input type="number" id="s_suc" value="100"></div>
+                    <div class="form-group"><label>Discharge Pressure (psi)</label><input type="number" id="s_dis" value="200"></div>
+                    <div class="form-group"><label>Power (kW)</label><input type="number" id="s_power" value="45"></div>
+                    <div class="form-group"><label>Runtime (hours)</label><input type="number" id="s_run" value="5000"></div>
+                    <div class="form-group"><label>Days Since Maintenance</label><input type="number" id="s_maint" value="30"></div>
+                </div>
+                <button class="btn" onclick="predictStatus()">Predict Status</button>
+                <div id="statusResult" class="result-box" style="display:none"></div>
+            </div>
+        </div>
+
+        <div id="rul" class="panel">
+            <div class="card">
+                <h3>Remaining Useful Life Estimation</h3>
+                <div class="form-grid">
+                    <div class="form-group"><label>Vibration X (mm/s)</label><input type="number" id="r_vx" value="3.5" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Y (mm/s)</label><input type="number" id="r_vy" value="2.8" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Z (mm/s)</label><input type="number" id="r_vz" value="2.0" step="0.1"></div>
+                    <div class="form-group"><label>Temperature (C)</label><input type="number" id="r_temp" value="85"></div>
+                    <div class="form-group"><label>Pressure (psi)</label><input type="number" id="r_press" value="180"></div>
+                    <div class="form-group"><label>Flow Rate (m3/h)</label><input type="number" id="r_flow" value="120"></div>
+                    <div class="form-group"><label>Motor Current (A)</label><input type="number" id="r_curr" value="45"></div>
+                    <div class="form-group"><label>RPM</label><input type="number" id="r_rpm" value="1800"></div>
+                    <div class="form-group"><label>Bearing Temp (C)</label><input type="number" id="r_bear" value="95"></div>
+                    <div class="form-group"><label>Oil Level (%)</label><input type="number" id="r_oil" value="60"></div>
+                    <div class="form-group"><label>Seal Pressure (psi)</label><input type="number" id="r_seal" value="65"></div>
+                    <div class="form-group"><label>Suction Pressure (psi)</label><input type="number" id="r_suc" value="90"></div>
+                    <div class="form-group"><label>Discharge Pressure (psi)</label><input type="number" id="r_dis" value="170"></div>
+                    <div class="form-group"><label>Power (kW)</label><input type="number" id="r_power" value="60"></div>
+                    <div class="form-group"><label>Runtime (hours)</label><input type="number" id="r_run" value="8000"></div>
+                    <div class="form-group"><label>Days Since Maintenance</label><input type="number" id="r_maint" value="90"></div>
+                </div>
+                <button class="btn" onclick="predictRUL()">Estimate RUL</button>
+                <div id="rulResult" class="result-box" style="display:none"></div>
+            </div>
+        </div>
+
+        <div id="anomaly" class="panel">
+            <div class="card">
+                <h3>Sensor Anomaly Detection</h3>
+                <div class="form-grid">
+                    <div class="form-group"><label>Vibration X (mm/s)</label><input type="number" id="a_vx" value="8.0" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Y (mm/s)</label><input type="number" id="a_vy" value="6.5" step="0.1"></div>
+                    <div class="form-group"><label>Vibration Z (mm/s)</label><input type="number" id="a_vz" value="5.0" step="0.1"></div>
+                    <div class="form-group"><label>Temperature (C)</label><input type="number" id="a_temp" value="120"></div>
+                    <div class="form-group"><label>Pressure (psi)</label><input type="number" id="a_press" value="100"></div>
+                    <div class="form-group"><label>Motor Current (A)</label><input type="number" id="a_curr" value="90"></div>
+                    <div class="form-group"><label>Bearing Temp (C)</label><input type="number" id="a_bear" value="130"></div>
+                    <div class="form-group"><label>Power (kW)</label><input type="number" id="a_power" value="95"></div>
+                </div>
+                <button class="btn" onclick="checkAnomaly()">Check Anomaly</button>
+                <div id="anomalyResult" class="result-box" style="display:none"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showPanel(id) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadDashboard() {
+            const res = await fetch('/api/dashboard');
+            const data = await res.json();
+            const report = data.report;
+            const preds = data.predictions;
+            const cm = report.classifier_metrics || {};
+            const rm = report.rul_metrics || {};
+            document.getElementById('stats-grid').innerHTML = `
+                <div class="card"><h3>Best Classifier</h3><div class="value" style="font-size:1.1rem">${report.best_classifier || 'N/A'}</div></div>
+                <div class="card"><h3>Accuracy</h3><div class="value">${(cm.accuracy || 0).toFixed(4)}</div></div>
+                <div class="card"><h3>F1 Score</h3><div class="value">${(cm.f1_macro || 0).toFixed(4)}</div></div>
+                <div class="card"><h3>RUL MAE</h3><div class="value">${(rm.MAE || 0).toFixed(1)}<span style="color:#64748b;font-size:0.8rem"> days</span></div></div>
+            `;
+            const tbody = document.querySelector('#predTable tbody');
+            tbody.innerHTML = preds.map(p => {
+                const cls = p.current_status.includes('failure') ? 'badge-red' :
+                            p.current_status.includes('corrective') ? 'badge-orange' :
+                            p.current_status.includes('preventive') ? 'badge-yellow' :
+                            p.current_status === 'warning' ? 'badge-yellow' : 'badge-green';
+                return `<tr><td>${p.unit_id}</td><td>${p.equipment_type}</td>
+                    <td><span class="badge ${cls}">${p.current_status}</span></td>
+                    <td>${p.predicted_rul_days}</td><td>${p.temperature}</td><td>${p.power_consumption}</td></tr>`;
+            }).join('');
+        }
+
+        async function predictStatus() {
+            const body = {
+                vibration_x: +document.getElementById('s_vx').value,
+                vibration_y: +document.getElementById('s_vy').value,
+                vibration_z: +document.getElementById('s_vz').value,
+                temperature: +document.getElementById('s_temp').value,
+                pressure: +document.getElementById('s_press').value,
+                flow_rate: +document.getElementById('s_flow').value,
+                motor_current: +document.getElementById('s_curr').value,
+                rpm: +document.getElementById('s_rpm').value,
+                bearing_temp: +document.getElementById('s_bear').value,
+                oil_level: +document.getElementById('s_oil').value,
+                seal_pressure: +document.getElementById('s_seal').value,
+                suction_pressure: +document.getElementById('s_suc').value,
+                discharge_pressure: +document.getElementById('s_dis').value,
+                power_consumption: +document.getElementById('s_power').value,
+                runtime_hours: +document.getElementById('s_run').value,
+                days_since_maintenance: +document.getElementById('s_maint').value,
+            };
+            const res = await fetch('/api/predict_status', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            const data = await res.json();
+            const box = document.getElementById('statusResult');
+            box.style.display = 'block';
+            if (data.status === 'success') {
+                const cls = data.predicted_status.includes('failure') ? 'badge-red' :
+                            data.predicted_status.includes('corrective') ? 'badge-orange' :
+                            data.predicted_status.includes('preventive') ? 'badge-yellow' :
+                            data.predicted_status === 'warning' ? 'badge-yellow' : 'badge-green';
+                let probHtml = '';
+                if (data.probabilities) {
+                    probHtml = '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">';
+                    for (const [k, v] of Object.entries(data.probabilities)) {
+                        probHtml += `<span style="background:#1e293b;padding:4px 10px;border-radius:6px;font-size:0.8rem">${k}: ${(v*100).toFixed(1)}%</span>`;
+                    }
+                    probHtml += '</div>';
+                }
+                box.innerHTML = `<h3>Predicted Status</h3><p><span class="badge ${cls}" style="font-size:1rem;padding:6px 16px">${data.predicted_status}</span></p>${probHtml}`;
+            } else {
+                box.innerHTML = `<h3 style="color:#ef4444">Error</h3><p>${data.message}</p>`;
+            }
+        }
+
+        async function predictRUL() {
+            const body = {
+                vibration_x: +document.getElementById('r_vx').value,
+                vibration_y: +document.getElementById('r_vy').value,
+                vibration_z: +document.getElementById('r_vz').value,
+                temperature: +document.getElementById('r_temp').value,
+                pressure: +document.getElementById('r_press').value,
+                flow_rate: +document.getElementById('r_flow').value,
+                motor_current: +document.getElementById('r_curr').value,
+                rpm: +document.getElementById('r_rpm').value,
+                bearing_temp: +document.getElementById('r_bear').value,
+                oil_level: +document.getElementById('r_oil').value,
+                seal_pressure: +document.getElementById('r_seal').value,
+                suction_pressure: +document.getElementById('r_suc').value,
+                discharge_pressure: +document.getElementById('r_dis').value,
+                power_consumption: +document.getElementById('r_power').value,
+                runtime_hours: +document.getElementById('r_run').value,
+                days_since_maintenance: +document.getElementById('r_maint').value,
+            };
+            const res = await fetch('/api/predict_rul', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            const data = await res.json();
+            const box = document.getElementById('rulResult');
+            box.style.display = 'block';
+            if (data.status === 'success') {
+                const cls = data.rul_days < 30 ? 'badge-red' : data.rul_days < 60 ? 'badge-orange' : 'badge-green';
+                box.innerHTML = `<h3>Remaining Useful Life</h3>
+                    <p style="font-size:2rem;font-weight:700;color:#dc2626">${data.rul_days} days</p>
+                    <p style="margin-top:4px"><span class="badge ${cls}">${data.recommendation.replace(/_/g, ' ').toUpperCase()}</span></p>`;
+            } else {
+                box.innerHTML = `<h3 style="color:#ef4444">Error</h3><p>${data.message}</p>`;
+            }
+        }
+
+        async function checkAnomaly() {
+            const body = {
+                vibration_x: +document.getElementById('a_vx').value,
+                vibration_y: +document.getElementById('a_vy').value,
+                vibration_z: +document.getElementById('a_vz').value,
+                temperature: +document.getElementById('a_temp').value,
+                pressure: +document.getElementById('a_press').value,
+                motor_current: +document.getElementById('a_curr').value,
+                bearing_temp: +document.getElementById('a_bear').value,
+                power_consumption: +document.getElementById('a_power').value,
+            };
+            const res = await fetch('/api/anomaly_check', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+            const data = await res.json();
+            const box = document.getElementById('anomalyResult');
+            box.style.display = 'block';
+            if (data.status === 'success') {
+                const cls = data.is_anomaly ? 'badge-red' : 'badge-green';
+                const label = data.is_anomaly ? 'ANOMALY DETECTED' : 'Normal Operation';
+                box.innerHTML = `<h3>Result</h3><p><span class="badge ${cls}" style="font-size:1rem;padding:6px 16px">${label}</span></p>
+                    <p style="margin-top:8px;color:#94a3b8">Anomaly Score: ${data.anomaly_score} ${data.is_anomaly ? '(< 0)' : '(>= 0)'}</p>`;
+            } else {
+                box.innerHTML = `<h3 style="color:#ef4444">Error</h3><p>${data.message}</p>`;
+            }
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>
