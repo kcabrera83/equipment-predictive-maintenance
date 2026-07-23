@@ -2,13 +2,19 @@
 
 import json
 import sys
+import warnings
 from pathlib import Path
 from typing import Any
+
+warnings.filterwarnings("ignore")
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np
 import pandas as pd
+import xgboost as xgb
+from pyod.models.iforest import IForest
+from lifelines import WeibullFitter
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_fastapi_instrumentator import Instrumentator
@@ -16,8 +22,8 @@ from pydantic import BaseModel
 
 app = FastAPI(
     title="Equipment Predictive Maintenance",
-    description="Equipment status prediction, remaining useful life estimation, and anomaly detection",
-    version="1.0.0",
+    description="Equipment status prediction (XGBoost), anomaly detection (PyOD), and survival analysis (lifelines)",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -42,6 +48,23 @@ async def load_models():
         models["rul_estimator"] = LifeEstimator.load("outputs/models/life_estimator.pkl")
     except Exception as e:
         print(f"  Error loading models: {e}")
+
+    try:
+        rng = np.random.default_rng(42)
+        normal_data = pd.DataFrame({
+            "vibration_x": rng.uniform(0.5, 5, 200),
+            "vibration_y": rng.uniform(0.3, 4, 200),
+            "vibration_z": rng.uniform(0.2, 3, 200),
+            "temperature": rng.uniform(40, 90, 200),
+            "pressure": rng.uniform(50, 400, 200),
+            "motor_current": rng.uniform(10, 80, 200),
+            "bearing_temp": rng.uniform(50, 110, 200),
+            "power_consumption": rng.uniform(20, 80, 200),
+        })
+        models["anomaly_detector"] = IForest(contamination=0.05, random_state=42)
+        models["anomaly_detector"].fit(normal_data.values)
+    except Exception as e:
+        print(f"  Error training anomaly detector: {e}")
 
 
 class SensorInput(BaseModel):
@@ -87,7 +110,11 @@ def _preprocess(df):
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "service": "equipment-predictive-maintenance"}
+    return {
+        "status": "ok",
+        "service": "equipment-predictive-maintenance",
+        "framework": "xgboost+pyod+lifelines",
+    }
 
 
 @app.get("/api/dashboard")
@@ -155,28 +182,23 @@ async def api_predict_rul(request: SensorInput):
 @app.post("/api/anomaly_check")
 async def api_anomaly_check(request: AnomalyInput):
     try:
-        from equip_predict.models.anomaly_detector import EquipmentAnomalyDetector
-        df = _to_df(request.model_dump())
-        rng = np.random.default_rng(42)
-        normal_data = pd.DataFrame({
-            "vibration_x": rng.uniform(0.5, 5, 100),
-            "vibration_y": rng.uniform(0.3, 4, 100),
-            "vibration_z": rng.uniform(0.2, 3, 100),
-            "temperature": rng.uniform(40, 90, 100),
-            "pressure": rng.uniform(50, 400, 100),
-            "motor_current": rng.uniform(10, 80, 100),
-            "bearing_temp": rng.uniform(50, 110, 100),
-            "power_consumption": rng.uniform(20, 80, 100),
-        })
-        detector = EquipmentAnomalyDetector()
-        detector.fit(normal_data)
-        predictions, scores = detector.predict(df)
-        is_anomaly = predictions[0] == -1
+        if "anomaly_detector" not in models:
+            raise HTTPException(status_code=503, detail="Anomaly detector not loaded")
+        data = np.array([[
+            request.vibration_x, request.vibration_y, request.vibration_z,
+            request.temperature, request.pressure, request.motor_current,
+            request.bearing_temp, request.power_consumption,
+        ]])
+        pred = models["anomaly_detector"].predict(data)
+        score = models["anomaly_detector"].decision_function(data)
+        is_anomaly = pred[0] == 1
         return {
             "status": "success",
             "is_anomaly": bool(is_anomaly),
-            "anomaly_score": round(float(scores[0]), 4),
+            "anomaly_score": round(float(score[0]), 4),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -184,4 +206,3 @@ async def api_anomaly_check(request: AnomalyInput):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=5003)
-

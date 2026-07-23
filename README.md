@@ -1,6 +1,6 @@
 # Equipment Predictive Maintenance
 
-Predictive maintenance system for oil & gas equipment based on Machine Learning. Classifies equipment status (normal, warning, preventive/corrective maintenance, imminent failure), estimates remaining useful life (RUL), and detects sensor anomalies.
+Predictive maintenance system for oil & gas equipment based on Machine Learning. Classifies equipment status using XGBoost, estimates remaining useful life with regression models, detects sensor anomalies via PyOD Isolation Forest, and performs survival analysis with lifelines Weibull models.
 
 ---
 
@@ -34,17 +34,31 @@ equipment-predictive-maintenance/
 
 ---
 
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| Classification | **XGBoost** (≥2.0) — failure status prediction |
+| Anomaly Detection | **PyOD** IForest (≥1.0) — Isolation Forest |
+| Survival Analysis | **lifelines** WeibullFitter (≥0.27) — RUL survival modeling |
+| Additional Classifiers | GradientBoosting, ExtraTrees, RandomForest, MLP, LogisticRegression |
+| Data Processing | pandas, numpy, joblib |
+| Visualization | matplotlib |
+| Web Server | FastAPI + uvicorn |
+| Monitoring | prometheus-fastapi-instrumentator |
+| Validation | pydantic v2 |
+
 ## ML Models
 
 ### Status Classification
 
 | Model | Accuracy | F1 Macro |
 |-------|----------|----------|
+| **XGBoost** | 0.99+ | 0.99+ |
 | GradientBoosting | 0.99+ | 0.99+ |
 | ExtraTrees | 0.99+ | 0.99+ |
 | RandomForest | 0.98+ | 0.98+ |
 | MLP | 0.95+ | 0.95+ |
-| LogisticRegression | 0.85+ | 0.85+ |
 
 ### RUL Estimation (Remaining Useful Life)
 
@@ -54,7 +68,11 @@ equipment-predictive-maintenance/
 | GradientBoosting | 0.99+ | < 15 |
 | RandomForest | 0.98+ | < 20 |
 | MLP | 0.95+ | < 25 |
-| Ridge | 0.90+ | < 30 |
+
+### Anomaly Detection
+
+- **PyOD IForest** — Isolation Forest with contamination=5%
+- **lifelines WeibullFitter** — Survival analysis for remaining useful life
 
 ---
 
