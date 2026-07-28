@@ -1,5 +1,3 @@
-"""Training script for equipment predictive maintenance models."""
-
 import os
 import pickle
 import sys
@@ -24,12 +22,10 @@ ANOMALY_FEATURES = [
 
 
 def main():
-    print("=" * 60)
-    print("  Equipment Predictive Maintenance - Training")
-    print("=" * 60)
+    pass
 
     print("\n[1/6] Generating synthetic sensor data...")
-    gen = EquipDataGenerator(seed=42)
+    gen = EquipDataGenerator(seed=2024)
     df = gen.generate(n_units=150, n_days=365)
     os.makedirs("outputs/data", exist_ok=True)
     df.to_csv("outputs/data/equipment_sensors.csv", index=False)
@@ -67,7 +63,7 @@ def main():
     print("\n[5/6] Training anomaly detector (Isolation Forest on normal data)...")
     normal_df = df[df["status"] == 0]
     X_anomaly = normal_df[ANOMALY_FEATURES].values
-    anomaly_detector = IForest(contamination=0.05, random_state=42)
+    anomaly_detector = IForest(contamination=0.05, random_state=2024)
     anomaly_detector.fit(X_anomaly)
     print(f"  Fitted on {len(X_anomaly)} normal records")
 
@@ -80,14 +76,12 @@ def main():
     with open("outputs/models/anomaly_detector.pkl", "wb") as f:
         pickle.dump(anomaly_detector, f)
 
-    print("  Models saved to outputs/models/")
+    pass
     print("\n" + "=" * 60)
-    print("  RESULTS SUMMARY")
-    print("=" * 60)
+    pass
     print(f"  Failure Predictor:  Train Acc={train_acc:.4f} | Test Acc={test_acc:.4f}")
     print(f"  RUL Estimator:      Train R2={train_r2:.4f} | Test R2={test_r2:.4f}")
     print(f"  Anomaly Detector:   Fitted on {len(X_anomaly)} normal samples")
-    print("=" * 60)
 
 
 if __name__ == "__main__":

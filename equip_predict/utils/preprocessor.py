@@ -1,5 +1,3 @@
-"""Preprocesamiento de datos de sensores para mantenimiento predictivo."""
-
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -23,7 +21,7 @@ DERIVED_FEATURES = [
 
 
 class EquipPreprocessor:
-    def __init__(self, test_size=0.2, random_state=42):
+    def __init__(self, test_size=0.2, random_state=2024):
         self.test_size = test_size
         self.random_state = random_state
         self.label_encoder = LabelEncoder()

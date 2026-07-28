@@ -6,7 +6,7 @@ sys.path.insert(0, ".")
 print("1. Generating data...", flush=True)
 t = time.time()
 from equip_predict.data_generator import EquipDataGenerator
-gen = EquipDataGenerator(seed=42)
+gen = EquipDataGenerator(seed=2024)
 df = gen.generate(n_units=80, n_days=200)
 print(f"   {len(df)} records in {time.time()-t:.1f}s", flush=True)
 

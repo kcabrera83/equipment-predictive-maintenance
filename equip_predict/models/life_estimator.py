@@ -1,5 +1,3 @@
-"""Modelo de estimacion de Vida Util Restante (RUL)."""
-
 import joblib
 import numpy as np
 from pathlib import Path
@@ -10,13 +8,13 @@ from sklearn.model_selection import cross_val_score
 class LifeEstimator:
     MODELS = {
         "random_forest": lambda: RandomForestRegressor(
-            n_estimators=80, max_depth=10, min_samples_split=5, random_state=42, n_jobs=-1,
+            n_estimators=80, max_depth=10, min_samples_split=5, random_state=2024, n_jobs=-1,
         ),
         "gradient_boosting": lambda: GradientBoostingRegressor(
-            n_estimators=50, max_depth=4, learning_rate=0.15, subsample=0.8, random_state=42,
+            n_estimators=50, max_depth=4, learning_rate=0.15, subsample=0.8, random_state=2024,
         ),
         "extra_trees": lambda: ExtraTreesRegressor(
-            n_estimators=80, max_depth=10, random_state=42, n_jobs=-1,
+            n_estimators=80, max_depth=10, random_state=2024, n_jobs=-1,
         ),
     }
 

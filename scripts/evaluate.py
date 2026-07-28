@@ -5,7 +5,7 @@ import sys
 import json
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys; sys.path.append(str(Path(__file__).resolve().parent))
 
 from equip_predict.data_generator import EquipDataGenerator, STATUS_LABELS
 from equip_predict.utils.preprocessor import EquipPreprocessor
@@ -17,11 +17,9 @@ from equip_predict.models.anomaly_detector import EquipmentAnomalyDetector
 
 
 def main():
-    print("=" * 60)
-    print("  EVALUATION - Equipment Predictive Maintenance")
-    print("=" * 60)
+    pass
 
-    gen = EquipDataGenerator(seed=42)
+    gen = EquipDataGenerator(seed=2024)
     df = gen.generate(n_units=50, n_days=120)
     prep = EquipPreprocessor()
     viz = EquipVisualizer()
@@ -79,7 +77,7 @@ def main():
     with open(output_path, "w") as f:
         json.dump(eval_report, f, indent=2)
     print(f"\n  Report saved to {output_path}")
-    print("  Evaluation completed successfully!")
+    pass
     return cls_eval, rul_eval
 
 

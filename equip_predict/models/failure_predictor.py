@@ -1,5 +1,3 @@
-"""Modelo de clasificacion de estado de equipos."""
-
 import joblib
 from pathlib import Path
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, ExtraTreesClassifier
@@ -10,13 +8,13 @@ from sklearn.metrics import accuracy_score, f1_score
 class FailurePredictor:
     MODELS = {
         "random_forest": lambda: RandomForestClassifier(
-            n_estimators=80, max_depth=10, random_state=42, n_jobs=-1,
+            n_estimators=80, max_depth=10, random_state=2024, n_jobs=-1,
         ),
         "gradient_boosting": lambda: GradientBoostingClassifier(
-            n_estimators=50, max_depth=4, learning_rate=0.15, subsample=0.8, random_state=42,
+            n_estimators=50, max_depth=4, learning_rate=0.15, subsample=0.8, random_state=2024,
         ),
         "extra_trees": lambda: ExtraTreesClassifier(
-            n_estimators=80, max_depth=10, random_state=42, n_jobs=-1,
+            n_estimators=80, max_depth=10, random_state=2024, n_jobs=-1,
         ),
     }
 

@@ -1,5 +1,3 @@
-"""FastAPI web server for equipment predictive maintenance."""
-
 import json
 import pickle
 import sys
@@ -9,7 +7,7 @@ from typing import Any
 
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sys; sys.path.append(str(Path(__file__).resolve().parent))
 
 import numpy as np
 import pandas as pd
@@ -22,7 +20,7 @@ from pydantic import BaseModel
 app = FastAPI(
     title="Equipment Predictive Maintenance",
     description="Equipment status prediction (XGBoost), anomaly detection (PyOD), and survival analysis (lifelines)",
-    version="2.0.0",
+    version="0.1",
 )
 
 app.add_middleware(
@@ -52,10 +50,10 @@ def _fit_anomaly_detector():
         df = pd.read_csv(data_path)
     else:
         from equip_predict.data_generator import EquipDataGenerator
-        gen = EquipDataGenerator(seed=42)
+        gen = EquipDataGenerator(seed=2024)
         df = gen.generate(n_units=150, n_days=365)
     X = df[ANOMALY_FEATURES].values
-    detector = IForest(contamination=0.05, random_state=42)
+    detector = IForest(contamination=0.05, random_state=2024)
     detector.fit(X)
     return detector
 
@@ -84,7 +82,7 @@ async def load_models():
                 df = pd.read_csv(data_path)
             else:
                 from equip_predict.data_generator import EquipDataGenerator
-                gen = EquipDataGenerator(seed=42)
+                gen = EquipDataGenerator(seed=2024)
                 df = gen.generate(n_units=150, n_days=365)
             preprocessor = EquipPreprocessor()
             preprocessor.fit(df)

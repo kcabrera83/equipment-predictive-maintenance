@@ -6,7 +6,7 @@ import json
 import numpy as np
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys; sys.path.append(str(Path(__file__).resolve().parent))
 
 from equip_predict.data_generator import EquipDataGenerator, STATUS_LABELS
 from equip_predict.utils.preprocessor import EquipPreprocessor
@@ -15,11 +15,9 @@ from equip_predict.models.life_estimator import LifeEstimator
 
 
 def main():
-    print("=" * 60)
-    print("  PREDICTION - Equipment Predictive Maintenance")
-    print("=" * 60)
+    pass
 
-    gen = EquipDataGenerator(seed=99)
+    gen = EquipDataGenerator(seed=55)
     df = gen.generate(n_units=10, n_days=365)
 
     last_records = df.groupby("unit_id").tail(1)
@@ -57,7 +55,7 @@ def main():
     with open(output_path, "w") as f:
         json.dump(predictions, f, indent=2)
     print(f"\n  Predictions saved to {output_path}")
-    print("  Prediction completed successfully!")
+    pass
     return predictions
 
 

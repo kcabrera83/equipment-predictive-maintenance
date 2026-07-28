@@ -1,5 +1,3 @@
-"""Detector de anomalias en sensores de equipos."""
-
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import IsolationForest
@@ -7,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 
 
 class EquipmentAnomalyDetector:
-    def __init__(self, contamination=0.05, random_state=42):
+    def __init__(self, contamination=0.05, random_state=2024):
         self.model = IsolationForest(contamination=contamination, random_state=random_state)
         self.scaler = StandardScaler()
         self._fitted = False

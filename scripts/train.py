@@ -7,7 +7,7 @@ from pathlib import Path
 
 warnings.filterwarnings("ignore")
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+import sys; sys.path.append(str(Path(__file__).resolve().parent))
 
 import numpy as np
 import pandas as pd
@@ -31,7 +31,7 @@ def train_failure_predictor(X, y):
         learning_rate=0.1,
         use_label_encoder=False,
         eval_metric="mlogloss",
-        random_state=42,
+        random_state=2024,
     )
     model.fit(X, y)
     return model
@@ -39,7 +39,7 @@ def train_failure_predictor(X, y):
 
 def train_anomaly_detector(X):
     """Train Isolation Forest from PyOD for anomaly detection."""
-    model = IForest(contamination=0.05, random_state=42)
+    model = IForest(contamination=0.05, random_state=2024)
     model.fit(X)
     return model
 
@@ -54,11 +54,9 @@ def train_survival_model(durations, events):
 
 
 def main():
-    print("=" * 60)
-    print("  TRAINING - Equipment Predictive Maintenance")
-    print("=" * 60)
+    pass
 
-    gen = EquipDataGenerator(seed=42)
+    gen = EquipDataGenerator(seed=2024)
     df = gen.generate(n_units=50, n_days=120)
     gen.save(df)
     print(f"  Dataset: {len(df)} records, {df['unit_id'].nunique()} units")
@@ -69,7 +67,7 @@ def main():
     viz.plot_failure_distribution(df)
     viz.plot_rul_distribution(df)
     viz.plot_correlation(df)
-    print("  Plots generated in outputs/plots/")
+    pass
 
     print("\n  [1] Training failure classification (XGBoost)...")
     X_cls_train, X_cls_test, y_cls_train, y_cls_test, cls_features = prep.prepare_classification(df)

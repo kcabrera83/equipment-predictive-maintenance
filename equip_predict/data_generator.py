@@ -1,5 +1,3 @@
-"""Generador de datos sinteticos de sensores para equipos oil & gas."""
-
 import numpy as np
 import pandas as pd
 from pathlib import Path
@@ -62,7 +60,7 @@ STATUS_LABELS = {
 
 
 class EquipDataGenerator:
-    def __init__(self, seed=42):
+    def __init__(self, seed=2024):
         self.rng = np.random.default_rng(seed)
 
     def generate(self, n_units=150, n_days=365):
@@ -169,7 +167,7 @@ class EquipDataGenerator:
 
 
 if __name__ == "__main__":
-    gen = EquipDataGenerator(seed=42)
+    gen = EquipDataGenerator(seed=2024)
     df = gen.generate(n_units=150, n_days=365)
     path = gen.save(df)
     print(f"Dataset: {len(df)} registros, {df['unit_id'].nunique()} equipos")

@@ -1,5 +1,3 @@
-"""Visualizacion de datos de mantenimiento predictivo."""
-
 import numpy as np
 import pandas as pd
 import matplotlib
