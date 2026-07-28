@@ -8,10 +8,15 @@ venv/
 *.egg-info/
 dist/
 build/
-outputs/
+outputs/*
 data/
 *.pkl
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
+
+# Streamlit Cloud model files
+!outputs/models/
+!outputs/models/*.pkl
+
