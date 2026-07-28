@@ -84,5 +84,5 @@ def main():
     print(f"  Anomaly Detector:   Fitted on {len(X_anomaly)} normal samples")
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

@@ -166,7 +166,7 @@ class EquipDataGenerator:
         return filepath
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     gen = EquipDataGenerator(seed=2024)
     df = gen.generate(n_units=150, n_days=365)
     path = gen.save(df)

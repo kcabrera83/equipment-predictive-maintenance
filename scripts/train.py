@@ -134,5 +134,5 @@ def main():
     return best_cls_name, best_rul_name
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

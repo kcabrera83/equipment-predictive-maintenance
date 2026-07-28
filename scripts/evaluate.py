@@ -81,5 +81,5 @@ def main():
     return cls_eval, rul_eval
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
