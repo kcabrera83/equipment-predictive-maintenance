@@ -1,0 +1,25 @@
+site_name: Equipment Predictive Maintenance
+site_description: Failure prediction and remaining useful life estimation for rotating equipment.
+repo_url: https://github.com/kcabrera83/equipment-predictive-maintenance
+site_author: Kelvin J Cabrera
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: blue
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.top
+
+nav:
+  - Home: index.md
+  - API Reference: api.md
+  - Models: models.md
+
+markdown_extensions:
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true
