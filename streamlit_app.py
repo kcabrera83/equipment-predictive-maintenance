@@ -1,45 +1,63 @@
 import streamlit as st
-import sys
+import joblib, numpy as np, matplotlib.pyplot as plt
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
+import sys; sys.path.insert(0, str(Path(__file__).parent))
 
-st.set_page_config(page_title="Equipment Predictive Maintenance", layout="wide")
-st.title("Equipment Predictive Maintenance")
-st.markdown("Predict equipment failures and remaining useful life.")
+st.set_page_config(page_title="Predictive Maintenance", layout="wide")
+st.title("Predictive Maintenance")
+st.markdown("RUL estimation & failure classification")
 
-import joblib, numpy as np
-d = Path(__file__).parent / 'outputs' / 'models'
-models = {'failure': joblib.load(d / 'failure_classifier.pkl'), 'rul': joblib.load(d / 'rul_estimator.pkl')}
+@st.cache_resource
+def load_models():
+    base = Path(__file__).parent / 'outputs' / 'models'
+    return {'state': joblib.load(base / 'failure_classifier.pkl'), 'rul': joblib.load(base / 'rul_estimator.pkl')}
 
-st.sidebar.header("Input Parameters")
-vibration_x = st.sidebar.slider('Vibration X', 0, 50, 25)
-vibration_y = st.sidebar.slider('Vibration Y', 0, 50, 25)
-vibration_z = st.sidebar.slider('Vibration Z', 0, 50, 25)
-temperature = st.sidebar.slider('Temperature', 20, 200, 110)
-pressure = st.sidebar.slider('Pressure', 1, 100, 50)
-flow = st.sidebar.slider('Flow', 0, 500, 250)
-current = st.sidebar.slider('Current', 0, 200, 100)
-rpm = st.sidebar.slider('Rpm', 0, 5000, 2500)
-bearing_temp = st.sidebar.slider('Bearing Temp', 20, 150, 85)
-oil_level = st.sidebar.slider('Oil Level', 0, 100, 50)
-seal_pressure = st.sidebar.slider('Seal Pressure', 0, 50, 25)
-suction_pressure = st.sidebar.slider('Suction Pressure', 0, 50, 25)
-discharge_pressure = st.sidebar.slider('Discharge Pressure', 0, 50, 25)
-power = st.sidebar.slider('Power', 0, 1000, 500)
-operating_hrs = st.sidebar.slider('Operating Hrs', 0, 50000, 25000)
-days_since_maint = st.sidebar.slider('Days Since Maint', 0, 365, 182)
+models = load_models()
 
-if st.sidebar.button("Run"):
-    try:
-        x = np.array([[vibration_x, vibration_y, vibration_z, temperature, pressure, flow, current, rpm, bearing_temp, oil_level, seal_pressure, suction_pressure, discharge_pressure, power, operating_hrs, days_since_maint]])
-        cols = st.columns(2)
-        for i, (k, m) in enumerate(models.items()):
-            X = m['scaler'].transform(x)
-            p = m['model'].predict(X)
-            if 'label_encoder' in m:
-                val = m['label_encoder'].inverse_transform(p)[0]
+def predict(name, x):
+    m = models[name]
+    if isinstance(m, dict):
+        X = m['scaler'].transform(x)
+        p = m['model'].predict(X)
+        if 'label_encoder' in m:
+            return m['label_encoder'].inverse_transform(p)[0]
+        return float(p[0])
+    return float(m.predict(x)[0])
+
+col1, col2 = st.columns([1, 2])
+with col1:
+    st.subheader('Parameters')
+    vib_x = st.slider('Vib X', 0, 50, 25)
+    vib_y = st.slider('Vib Y', 0, 50, 25)
+    vib_z = st.slider('Vib Z', 0, 50, 25)
+    temp = st.slider('Temp', 20, 200, 110)
+    pres = st.slider('Pres', 1, 100, 50)
+    flow = st.slider('Flow', 0, 500, 250)
+    curr = st.slider('Curr', 0, 200, 100)
+    rpm = st.slider('Rpm', 0, 5000, 2500)
+    bearing = st.slider('Bearing', 20, 150, 85)
+    oil = st.slider('Oil', 0, 100, 50)
+    run = st.button('Run Prediction', use_container_width=True)
+
+with col2:
+    if run:
+        x = np.array([[vib_x, vib_y, vib_z, temp, pres, flow, curr, rpm, bearing, oil]])
+        results = {}
+        results['state'] = predict('state', x)
+        results['rul'] = predict('rul', x)
+        st.subheader('Results')
+        rcols = st.columns(len(results))
+        for i, (k, v) in enumerate(results.items()):
+            label = k.replace('_', ' ').title()
+            if isinstance(v, str):
+                rcols[i].metric(label, v)
             else:
-                val = f'{p[0]:.2f}'
-            cols[i].metric(k.title(), val)
-    except Exception as e:
-        st.error(str(e))
+                rcols[i].metric(label, f'{v:.2f}')
+        # Plot
+        fig, ax = plt.subplots()
+        names = [k.replace('_',' ').title() for k in results]
+        vals = [float(v) if isinstance(v, (int,float,str)) and str(v).replace('.','').replace('-','').isdigit() else 0 for v in results.values()]
+        if any(v != 0 for v in vals):
+            ax.bar(names, vals, color=['#0077B6','#00B4D8','#90E0EF'])
+            ax.set_ylabel('Value')
+            st.pyplot(fig)
